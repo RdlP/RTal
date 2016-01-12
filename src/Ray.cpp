@@ -11,9 +11,19 @@ Ray::~Ray()
 
 }
 
+void Ray::setOrigin(vec3 origin)
+{
+	m_origin = origin;
+}
+
 vec3 Ray::getOrigin()
 {
 	return m_origin;
+}
+
+void Ray::setDirection(vec3 direction)
+{
+	m_dir = direction;
 }
 
 vec3 Ray::getDirection()

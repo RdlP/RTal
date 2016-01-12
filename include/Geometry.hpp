@@ -27,6 +27,10 @@ class Geometry
 		{
 			return m_material;
 		}
+		mat4 getTransform()
+		{
+			return m_transform;
+		}
 	private:
 		mat4 m_transform;
 		Material *m_material;

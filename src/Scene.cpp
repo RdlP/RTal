@@ -35,6 +35,10 @@ vec3 Scene::trace(Ray ray, int depth)
 	for (int i = 0; i < m_geometries.size(); i++)
 	{
 		Geometry * geometry = m_geometries.at(i);
+		vec4 aux = glm::inverse(geometry->getTransform()) * vec4(ray.getOrigin(),1);
+		ray.setOrigin(vec3(aux));
+		aux = glm::inverse(geometry->getTransform()) * vec4(ray.getDirection(),0);
+		ray.setDirection(vec3(aux));
 		if(geometry->hit(ray, d))
 		{
 			if (d < dist)
@@ -49,12 +53,15 @@ vec3 Scene::trace(Ray ray, int depth)
 		return vec3(0);
 	}
 	intersectionPoint = ray.getOrigin() + ray.getDirection()*dist;
+	vec4 aux = geo->getTransform() * vec4(intersectionPoint,1);
+	intersectionPoint = vec3(aux.x,aux.y,aux.z);
 	for (int i = 0; i < m_lights.size(); i++)
 	{
 		Light *light = m_lights.at(i);
 		vec3 L;
 		float dist;
 		int visible=1;
+		float attenuation = 1.0f;
 		if (DirectionalLight* dl = dynamic_cast<DirectionalLight*>(light))
 		{
 			L = dl->getDirection();
@@ -63,6 +70,8 @@ vec3 Scene::trace(Ray ray, int depth)
 		else if (PointLight* pl = dynamic_cast<PointLight*>(light))
 		{
 			L = pl->getPosition() - intersectionPoint;
+			dist = glm::length(L);
+			attenuation = 1.0f / (pl->getConstantAttenuation() + pl->getLinearAttenuation()*dist + pl->getQuadraticAttenuation()*dist*dist);
 		}
 		Ray secondaryRay(intersectionPoint+glm::normalize(L)*0.001f, glm::normalize(L));
 		for (int j = 0; j < m_geometries.size(); j++)
@@ -74,7 +83,7 @@ vec3 Scene::trace(Ray ray, int depth)
 				break;
 			}
 		}
-		N = geo->getNormal(intersectionPoint);
+		N = vec3(glm::transpose(glm::inverse(geo->getTransform())) * vec4(geo->getNormal(intersectionPoint),1));
 
 		L = glm::normalize(L);
 		// Diffuse
@@ -95,12 +104,12 @@ vec3 Scene::trace(Ray ray, int depth)
 			vec3 spec = powf(dot,geo->getMaterial()->getShininess()) * geo->getMaterial()->getSpecular();
 			specular = light->getColor() * geo->getMaterial()->getSpecular() * spec * 255.0f;
 		}
-		outColor += /*geo->getMaterial()->getAmbient()*255.0f*/ diffuse + specular;
+		outColor += /*geo->getMaterial()->getAmbient()*255.0f*/ (diffuse + specular)*attenuation;
 		//REFLECTION
 		if (depth < m_maxDepth)
 		{
 			vec3 R1 = ray.getDirection() - 2.0f * glm::dot(ray.getDirection(), N) * N;
-			outColor += trace(Ray(intersectionPoint +  glm::normalize(R1) * 0.01f, glm::normalize(R1)), depth+1);
+			outColor += trace(Ray(intersectionPoint +  glm::normalize(R1) * 0.01f, glm::normalize(R1)), depth+1)*attenuation;
 		}
 
 		

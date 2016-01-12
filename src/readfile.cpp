@@ -84,10 +84,11 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
           validinput = readvals(s,6,values);
           if (validinput) {
             if (cmd == "point"){
-              Light * point = new PointLight(vec3(values[0],values[1],values[2]),vec3(values[3],values[4],values[5]), vec3(1));
+              PointLight * point = new PointLight(vec3(values[0],values[1],values[2]),vec3(values[3],values[4],values[5]));
+              point->setAttenuation(attenuation[0], attenuation[1], attenuation[2]);
               scene->addLight(point);
             }else if (cmd == "directional"){
-              Light * directional = new DirectionalLight(vec3(values[0],values[1],values[2]),vec3(values[3],values[4],values[5]));
+              DirectionalLight * directional = new DirectionalLight(vec3(values[0],values[1],values[2]),vec3(values[3],values[4],values[5]));
               scene->addLight(directional);
             }
           }

@@ -7,7 +7,9 @@ class Ray {
 	public:
 		Ray(vec3 origin, vec3 dir);
 		virtual ~Ray();
+		void setOrigin(vec3 origin);
 		vec3 getOrigin();
+		void setDirection(vec3 direction);
 		vec3 getDirection();
 
 	private:
