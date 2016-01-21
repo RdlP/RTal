@@ -14,10 +14,10 @@ class Geometry
 {
 	public:
 		Geometry(mat4 transform): m_transform(transform){
-			
+			m_transform_inv = glm::inverse(transform);
 		}
 		virtual ~Geometry() {}
-		virtual int hit(Ray& ray, float &dist) = 0;
+		virtual int hit(Ray ray, vec3 &point) = 0;
 		virtual vec3 getNormal(vec3 point) = 0;
 		void setMaterial(Material *material)
 		{
@@ -31,8 +31,13 @@ class Geometry
 		{
 			return m_transform;
 		}
+		mat4 getInverseTransform()
+		{
+			return m_transform_inv;
+		}
 	private:
 		mat4 m_transform;
+		mat4 m_transform_inv;
 		Material *m_material;
 };
 #endif

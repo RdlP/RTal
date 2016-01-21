@@ -39,16 +39,16 @@ float Screen::getAspectRatio()
 
 void Screen::putPixel(int x, int y, vec3 color)
 {
-	image[(y * m_width + x) * 3] = color.z < 256?(int)color.z&0xFF:255;
-	image[(y * m_width + x) * 3 + 1] = color.y < 256?(int)color.y&0xFF:255;
-	image[(y * m_width + x) * 3 + 2] = color.x < 256?(int)color.x&0xFF:255;
+	image[(y * m_width + x) * 3] = color.z <= 1.0f?(int)(color.z*255.0f)&0xFF:255;
+	image[(y * m_width + x) * 3 + 1] = color.y <= 1.0f?(int)(color.y*255.0f)&0xFF:255;
+	image[(y * m_width + x) * 3 + 2] = color.x <= 1.0f?(int)(color.x*255.0f)&0xFF:255;
 }
 
 void Screen::snapshot(std::string filename)
 {
 	FreeImage_Initialise();
-	FIBITMAP* bitmap = FreeImage_ConvertFromRawBits(image, m_width, m_height, m_width*3, 24, 0xff, 0, 0, true);
-  	FreeImage_Save(FIF_BMP, bitmap, filename.c_str(),0);
+	FIBITMAP* bitmap = FreeImage_ConvertFromRawBits(image, m_width, m_height, m_width*3, 24, 0xff, 0xff, 0xff, true);
+  	FreeImage_Save(FIF_PNG, bitmap, filename.c_str(),0);
   	FreeImage_DeInitialise();
 }
 

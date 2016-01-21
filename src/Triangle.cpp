@@ -19,45 +19,54 @@ vec3 Triangle::getNormal(vec3 point)
 	return n;
 }
 
-int Triangle::hit(Ray& ray, float &dist)
+int Triangle::hit(Ray ray, vec3 &point)
 {
-	vec3 e1 = m_b-m_a;
-	vec3 e2 = m_c-m_a;
-	vec3 dir = ray.getDirection();
-	vec3 q = glm::cross(dir, e2);
-	float a = glm::dot(e1,q);
-	if (a <= 0.0f)
+
+	ray.setOrigin(vec3(getInverseTransform() * vec4(ray.getOrigin(),1)));
+	ray.setDirection(glm::normalize(vec3(getInverseTransform() * vec4(ray.getDirection(),0))));
+
+	// R(t) = o + td;
+	// ax + by + cz = d => n·X=d
+	// n·R(t) = d
+	// n · [o + td] = d
+	// n·o + nt·d = d
+	// t = (d-n·o)/(n·d)
+	vec3 ab = m_b-m_a;
+	vec3 ac = m_c-m_a;
+	vec3 normal = glm::normalize(glm::cross(ab,ac));
+	float nd = glm::dot(normal,ray.getDirection());
+	if (nd == 0) // PARAREL
 	{
 		return 0;
 	}
-
-	float f = 1/a;
-	vec3 s = ray.getOrigin() - m_a;
-	float u = f*glm::dot(s,q);
-	if (u < 0.0f)
+	float d = glm::dot(normal, m_a);
+	float t = (d-glm::dot(normal,ray.getOrigin())) / nd;
+	if (t < 0)
 	{
 		return 0;
 	}
+	vec3 pointq = ray.getOrigin() + t * ray.getDirection();
+	vec3 ap = pointq - m_a; 
+	vec3 bp = pointq - m_b; 
+	vec3 cp = pointq - m_c; 
+	vec3 bc = m_c - m_b;
+	vec3 ca = m_a - m_c;
 
-	vec3 r = glm::cross(s,e1);
-	float v = f*glm::dot(dir,r);
-	if (v < 0.0f || u+v > 1.0f)
+	float e1 = glm::dot(glm::cross(ab, ap),normal);
+	float e2 = glm::dot(glm::cross(bc, bp),normal);
+	float e3 = glm::dot(glm::cross(ca, cp),normal);
+
+	if (e1 < 0 || e2 < 0 || e3 < 0)
 	{
 		return 0;
 	}
+	float dom = glm::dot(glm::cross(ab, ac),normal);
+	float alpha = e2 /dom;
+	float beta = e3/dom;
+	float gamma = e1/dom;
 
-	float t= f*glm::dot(e2,r);
-	float w = 1.0f - v - u;
 
-	vec3 intersected = m_a*w + m_b*u + m_c*v;
-	float distance = sqrt((intersected.x-ray.getOrigin().x)*(intersected.x-ray.getOrigin().x)+
-		(intersected.y-ray.getOrigin().y)*(intersected.y-ray.getOrigin().y)+
-		(intersected.z-ray.getOrigin().z)*(intersected.z-ray.getOrigin().z));
-	if (distance > dist)
-	{
-		return 0;
-	}
-	dist = distance;
+	point = m_a*alpha + m_b*beta + m_c*gamma;
 
 	return 1;
 }

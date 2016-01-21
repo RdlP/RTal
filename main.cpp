@@ -42,5 +42,6 @@ int main(int argc, char* argv[])
   
   scene->render(camera, screen);
   screen->snapshot(outputFile);
+  cout << outputFile << endl;
   return 0;
 }

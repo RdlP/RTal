@@ -187,7 +187,7 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
           validinput = readvals(s,4,values); 
           if (validinput) {
             Sphere *sphere = new Sphere(vec3(values[0],values[1],values[2]),values[3], transfstack.top());
-            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]), shininess);
+            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]), vec3(emission[0], emission[1], emission[2]), shininess);
             sphere->setMaterial(material);
             scene->addGeometry(sphere);
           }
@@ -201,7 +201,7 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
           validinput = readvals(s,3,values); 
           if (validinput) {
             Triangle *triangle = new Triangle(vertices[(int)values[0]],vertices[(int)values[1]],vertices[(int)values[2]], transfstack.top());
-            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]), shininess);
+            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]),  vec3(emission[0], emission[1], emission[2]), shininess);
             triangle->setMaterial(material);
             scene->addGeometry(triangle);
           }

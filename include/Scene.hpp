@@ -18,7 +18,6 @@ class Scene
 	public:
 		Scene();
 		virtual ~Scene();
-		//void render(Camera* camera, Screen* screen, unsigned char*& image);
 		void render(Camera* camera, Screen* screen);
 		vec3 trace(Ray ray, int depth);
 		void addGeometry(Geometry* geometry);

@@ -6,16 +6,23 @@
 class Material
 {
 	public:
-		Material(vec3 ambient, vec3 diffuse, vec3 specular, float shininess);
+		Material(vec3 ambient, vec3 diffuse, vec3 specular, vec3 emission, float shininess);
 		virtual ~Material();
 		vec3 getAmbient();
+		void setAmbient(vec3 ambient);
 		vec3 getDiffuse();
+		void setDiffuse(vec3 diffuse);
 		vec3 getSpecular();
+		void setSpecular(vec3 specular);
+		vec3 getEmission();
+		void setEmission(vec3 emission);
 		float getShininess();
+		void setShininess(float shininess);
 	private:
 		vec3 m_ambient;
 		vec3 m_diffuse;
 		vec3 m_specular;
+		vec3 m_emission;
 		float m_shininess;
 };
 #endif

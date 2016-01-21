@@ -15,36 +15,50 @@ Sphere::~Sphere()
 
 vec3 Sphere::getNormal(vec3 point)
 {
-	return glm::normalize(point-m_center);
+	vec3 p = vec3(glm::inverse(getTransform()) * vec4(point,1));
+	return glm::normalize(p-m_center);
 }
 
-int Sphere::hit(Ray& ray, float& dist)
+int Sphere::hit(Ray ray, vec3& point)
 {
-	vec3 m = ray.getOrigin() - m_center;
-	
-	float b = glm::dot(m, ray.getDirection());
-	
-	float c = glm::dot(m,m) - m_radius*m_radius;
-	
-	if (c > 0.0f && b > 0.0f)
-	{
-		return 0;
-	}
-	float discr = b*b-c;
-	if (discr < 0.0f)
-	{
-		return 0;
-	}
-	float t = -b - sqrt(discr);
-	vec3 intersected = ray.getOrigin() + ray.getDirection()*t;
-	float distance = sqrt((intersected.x-ray.getOrigin().x)*(intersected.x-ray.getOrigin().x)+
-		(intersected.y-ray.getOrigin().y)*(intersected.y-ray.getOrigin().y)+
-		(intersected.z-ray.getOrigin().z)*(intersected.z-ray.getOrigin().z));
+	ray.setOrigin(vec3(getInverseTransform() * vec4(ray.getOrigin(),1)));
+	ray.setDirection(glm::normalize(vec3(getInverseTransform() * vec4(ray.getDirection(),0))));
 
-	if (distance > dist)
+	// R(t) = o + td
+	// (p-c)·(p-c) - r² = 0 =>
+	// (o + td - c) · (o + td - c) - r² = 0 =>
+	// t²(D·D) + 2t(d · (o - c)) + (o - c) · (o - c) - r² = 0
+	vec3 m = ray.getOrigin() - m_center;
+
+	float a = glm::dot(ray.getDirection(), ray.getDirection());
+	float b = 2 * glm::dot(ray.getDirection(), m);
+	float c = glm::dot(m,m)-m_radius*m_radius;
+	float discr = b*b - 4*a*c;
+	if (discr < 0)
 	{
 		return 0;
 	}
-	dist = distance;
+
+	float x1 = (-b+sqrt(discr))/(2*a);
+	float x2 = (-b-sqrt(discr))/(2*a);
+
+	float t; 
+	if (x1 > x2)
+	{
+		t=x2;
+	}
+
+	if (t < 0)
+	{
+		t=x1;
+	}
+
+
+	if (t<0)
+	{
+		return 0;
+	}
+	point = ray.getOrigin() + ray.getDirection()*t;
+
 	return 1;
 }

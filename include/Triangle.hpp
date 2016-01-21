@@ -11,7 +11,7 @@ class Triangle : public Geometry
 	public:
 		Triangle(vec3 a, vec3 b, vec3 c, mat4 transform);
 		virtual ~Triangle();
-		int hit(Ray& ray, float &dist);
+		int hit(Ray ray, vec3 &point);
 		vec3 getNormal(vec3 point);
 	private:
 		vec3 m_a, m_b, m_c;

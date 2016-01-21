@@ -40,8 +40,8 @@ void Camera::precomputeCameraFrame()
 
 Ray Camera::computeRay(int x, int y, Screen* screen)
 {
-	float alpha = m_angle * ((x -((float)screen->getWidth()/2)) / ((float)screen->getWidth()/2)) * screen->getAspectRatio();
-	float beta = m_angle * ((((float)screen->getHeight()/2) - y) / ((float)screen->getHeight()/2)) ;
+	float alpha = m_angle * (((x+0.5) -((float)screen->getWidth()/2)) / ((float)screen->getWidth()/2)) * screen->getAspectRatio();
+	float beta = m_angle * ((((float)screen->getHeight()/2) - (y+0.5)) / ((float)screen->getHeight()/2)) ;
 	vec3 ray_direction = alpha*m_u + beta*m_v - m_w;
 	Ray primaryRay(m_eye, glm::normalize(ray_direction));
 	return primaryRay;
