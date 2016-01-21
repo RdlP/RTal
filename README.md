@@ -1,2 +1,3 @@
-Compile : make
-Use: ./rtal scenefile outputFile(BMP)
+```Compile : make
+Use: ./rtal scenefile outputFile(PNG)
+```
