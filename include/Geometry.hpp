@@ -4,6 +4,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "Material.hpp"
 #include "Ray.hpp"
+#include "Intersection.hpp"
 
 typedef glm::mat3 mat3 ;
 typedef glm::mat4 mat4 ; 
@@ -17,8 +18,7 @@ class Geometry
 			m_transform_inv = glm::inverse(transform);
 		}
 		virtual ~Geometry() {}
-		virtual int hit(Ray ray, vec3 &point) = 0;
-		virtual vec3 getNormal(vec3 point) = 0;
+		virtual Intersection hit(Ray ray) = 0;
 		void setMaterial(Material *material)
 		{
 			m_material = material;

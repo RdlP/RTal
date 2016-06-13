@@ -20,13 +20,13 @@ void Scene::addLight(Light *light)
 	m_lights.push_back(light);
 }
 
-vec3 Scene::trace(Ray ray, int depth)
+vec3 Scene::trace(Ray ray, int depth, float oiRefract)
 {
 	if (depth > getMaxDepth())
 	{
 		return vec3(1);
 	}
-	float dist = 9999999.0f;
+	float dist = 999999999999.0f;
 	vec3 intersectionPoint;
 	vec3 d;
 	vec3 N;
@@ -35,13 +35,15 @@ vec3 Scene::trace(Ray ray, int depth)
 	vec3 origin, direction;
 	origin = ray.getOrigin();
 	direction = ray.getDirection();
+	Intersection intersectionData;
 	for (int i = 0; i < m_geometries.size(); i++)
 	{
 		Geometry * geometry = m_geometries.at(i);
-
-		if(geometry->hit(ray, d))
+		Intersection res;
+		res = geometry->hit(ray);
+		if(res.isIntersection())
 		{
-			vec3 intersected = vec3( geometry->getTransform() * vec4(d,1));
+			vec3 intersected = vec3( geometry->getTransform() * vec4(res.getPoint(),1));
 			float distance = sqrt((intersected.x-ray.getOrigin().x)*(intersected.x-ray.getOrigin().x)+
 			(intersected.y-ray.getOrigin().y)*(intersected.y-ray.getOrigin().y)+
 			(intersected.z-ray.getOrigin().z)*(intersected.z-ray.getOrigin().z));
@@ -50,6 +52,7 @@ vec3 Scene::trace(Ray ray, int depth)
 				dist = distance;
 				geo = geometry;
 				intersectionPoint = intersected;
+				intersectionData = res;
 			}
 		}
 		
@@ -58,6 +61,7 @@ vec3 Scene::trace(Ray ray, int depth)
 	{
 		return vec3(0);
 	}
+	//return vec3(1.0f, 0.0f, 0.0f);
 	int visible=1;
 	for (int i = 0; i < m_lights.size() && visible == 1; i++)
 	{
@@ -72,21 +76,35 @@ vec3 Scene::trace(Ray ray, int depth)
 			L = dl->getDirection();
 			dist = 9999999999999.0f;
 		}
+		else if (SpotLight* sl = dynamic_cast<SpotLight*>(light))
+		{
+			L =  (sl->getPosition()-intersectionPoint);
+			float dot = glm::dot(glm::normalize(L),sl->getDirection());
+			if (dot < sl->getCosCutOff()){
+				attenuation = 0.0f;
+			}else{
+				attenuation = 1.0f / (sl->getConstantAttenuation() + sl->getLinearAttenuation()*dist + sl->getQuadraticAttenuation()*dist*dist);
+				attenuation *= powf(dot,sl->getExponent());
+			}
+			dist = glm::length(L);
+		}
 		else if (PointLight* pl = dynamic_cast<PointLight*>(light))
 		{
 			L =  (pl->getPosition()-intersectionPoint);
 			dist = glm::length(L);
 			attenuation = 1.0f / (pl->getConstantAttenuation() + pl->getLinearAttenuation()*dist + pl->getQuadraticAttenuation()*dist*dist);
 		}
+		
 		Ray secondaryRay(intersectionPoint+glm::normalize(L)*0.0001f, glm::normalize(L));
 		vec3 o = secondaryRay.getOrigin();
 		vec3 dir = secondaryRay.getDirection();
 		for (int j = 0; j < m_geometries.size(); j++)
 		{
 			Geometry* g = m_geometries.at(j);
-			if (g->hit(secondaryRay, intersected))
+			Intersection inter = g->hit(secondaryRay);
+			if (inter.isIntersection())
 			{
-				intersected = vec3( (g->getTransform()) * vec4(intersected,1));
+				intersected = vec3( (g->getTransform()) * vec4(inter.getPoint(),1));
 				float distance = glm::length(o-intersected);
 				if (distance < dist)
 				{
@@ -94,7 +112,7 @@ vec3 Scene::trace(Ray ray, int depth)
 				}
 			}
 		}
-		N = glm::normalize(vec3(glm::inverse(glm::transpose(geo->getTransform())) * vec4(geo->getNormal(intersectionPoint),0)));
+		N = glm::normalize(vec3(glm::inverse(glm::transpose(geo->getTransform())) * vec4(intersectionData.getNormal(),0)));
 		L = glm::normalize(L);
 
 		// Diffuse
@@ -122,7 +140,21 @@ vec3 Scene::trace(Ray ray, int depth)
 		{
 			float spec = powf(dot,geo->getMaterial()->getShininess());
 			vec3 R = ray.getDirection() - 2.0f * glm::dot(ray.getDirection(), N) * N;
-			outColor += attenuation * light->getColor()* geo->getMaterial()->getSpecular() * trace(Ray(intersectionPoint +  R * 0.01f, R), depth+1);
+			outColor += attenuation * light->getColor()* geo->getMaterial()->getSpecular() * trace(Ray(intersectionPoint +  R * 0.01f, R), depth+1, oiRefract);
+		}
+		//REFRACTION
+		float iRefract = geo->getMaterial()->getRefractionIndex();
+		if (depth < m_maxDepth && iRefract > 0.0f)
+		{
+			float n = oiRefract / iRefract;
+			N = N * (intersectionData.isInside()?-1.0f:1.0f);
+			float cosI = -glm::dot(N, ray.getDirection());
+			float cosT2 = 1.0f - n*n*(1.0f -cosI*cosI);
+			if (cosT2 > 0.0f)
+			{
+				vec3 T = glm::normalize((n* ray.getDirection()) + (n*cosI-sqrtf(cosT2))*N);
+				outColor += trace(Ray(intersectionPoint +  T * 0.01f, T), depth+1, iRefract)*0.5f;
+			}
 		}
 	}
 	return geo->getMaterial()->getAmbient() + geo->getMaterial()->getEmission() + outColor;
@@ -131,14 +163,14 @@ vec3 Scene::trace(Ray ray, int depth)
 
 void Scene::render(Camera* camera, Screen* screen)
 {
-	float angle = tan(M_PI * 0.5 * camera->getFov() / 180.); 
+	//float angle = tan(M_PI * 0.5 * camera->getFov() / 180.); 
 	for (int i = 0; i < screen->getHeight(); i++)
 	{
 		std::cout << "Pixel: y: " << i << std::endl;
 	    for (int j = 0; j < screen->getWidth(); j++)
 	    {
 		  Ray primaryRay = camera->computeRay(j,i,screen);
-		  vec3 color = trace(primaryRay, 0);
+		  vec3 color = trace(primaryRay, 0, 1.0f);
 		  screen->putPixel(j,i,color);
 	    }
 	}

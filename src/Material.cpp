@@ -60,3 +60,13 @@ void Material::setShininess(float shininess)
 {
 	m_shininess = shininess;
 }
+
+float Material::getRefractionIndex()
+{
+	return m_iRefrac;
+}
+
+void Material::setRefractionIndex(float iRefrac)
+{
+	m_iRefrac = iRefrac;
+}

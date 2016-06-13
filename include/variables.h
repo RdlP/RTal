@@ -26,6 +26,7 @@ EXTERN float diffuse[3] ;
 EXTERN float specular[3] ; 
 EXTERN float emission[3] ; 
 EXTERN float shininess ; 
+EXTERN float refractIndex ; 
 EXTERN float attenuation[3]; 
 
 

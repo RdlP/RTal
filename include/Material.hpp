@@ -18,11 +18,14 @@ class Material
 		void setEmission(vec3 emission);
 		float getShininess();
 		void setShininess(float shininess);
+		float getRefractionIndex();
+		void setRefractionIndex(float iRefrac);
 	private:
 		vec3 m_ambient;
 		vec3 m_diffuse;
 		vec3 m_specular;
 		vec3 m_emission;
 		float m_shininess;
+		float m_iRefrac;
 };
 #endif

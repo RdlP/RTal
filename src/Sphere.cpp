@@ -13,13 +13,7 @@ Sphere::~Sphere()
 
 }
 
-vec3 Sphere::getNormal(vec3 point)
-{
-	vec3 p = vec3(glm::inverse(getTransform()) * vec4(point,1));
-	return glm::normalize(p-m_center);
-}
-
-int Sphere::hit(Ray ray, vec3& point)
+Intersection Sphere::hit(Ray ray)
 {
 	ray.setOrigin(vec3(getInverseTransform() * vec4(ray.getOrigin(),1)));
 	ray.setDirection(glm::normalize(vec3(getInverseTransform() * vec4(ray.getDirection(),0))));
@@ -36,7 +30,7 @@ int Sphere::hit(Ray ray, vec3& point)
 	float discr = b*b - 4*a*c;
 	if (discr < 0)
 	{
-		return 0;
+		return Intersection(false);
 	}
 
 	float x1 = (-b+sqrt(discr))/(2*a);
@@ -56,9 +50,17 @@ int Sphere::hit(Ray ray, vec3& point)
 
 	if (t<0)
 	{
-		return 0;
+		return Intersection(false);
 	}
-	point = ray.getOrigin() + ray.getDirection()*t;
+	vec3 point = ray.getOrigin() + ray.getDirection()*t;
 
-	return 1;
+	if (x2 >= 0 && x1 < 0)
+	{
+		return Intersection(true,point,glm::normalize(point-m_center), true);
+	}else if (x1 >= 0 && x2 < 0)
+	{
+		return Intersection(true,point,glm::normalize(point-m_center), true);
+	}
+
+	return Intersection(true,point,glm::normalize(point-m_center));
 }

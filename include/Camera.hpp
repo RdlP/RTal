@@ -8,20 +8,17 @@
 class Camera
 {
 	public:
-		Camera(vec3 eye, vec3 lookAt, vec3 up, float fov);
+		Camera(vec3 eye, vec3 lookAt, vec3 up);
 		virtual ~Camera();
-		Ray computeRay(int x, int y, Screen* screen);
+		virtual Ray computeRay(int x, int y, Screen* screen) = 0;
 		vec3 getEye();
 		vec3 getEyeV();
 		vec3 getLookAt();
 		vec3 getUp();
-		float getFov();
 
-	private:
-		void precomputeCameraFrame();
+	protected:
 		vec3 m_u, m_v, m_w;
 		vec3 m_eye, m_eyeV, m_lookAt, m_up;
-		float m_fov, m_angle;
 };
 
 #endif

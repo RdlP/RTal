@@ -10,6 +10,7 @@
 #include <FreeImage.h>
 #include <stdio.h>
 #include "Geometry.hpp"
+#include "Camera.hpp"
 #include "Triangle.hpp"
 #include "Sphere.hpp"
 
@@ -19,7 +20,7 @@ using namespace std;
 #include "variables.h" 
 #include "readfile.h"
 
-float specular[3], ambient[3]={0.2f,0.2f,0.2f}, diffuse[3], shininess, emission[3];
+float specular[3], ambient[3]={0.2f,0.2f,0.2f}, diffuse[3], shininess, refractIndex, emission[3];
 int maxDepth;
 float attenuation[3]={1.0f, 0.0f, 0.0f}; 
 std::string outputFile;
@@ -37,7 +38,7 @@ int main(int argc, char* argv[])
 
   readfile(argv[1], camera, screen, scene);
   cout << "Screen::width " << screen->getWidth() << " Screen::height " << screen->getHeight() << endl;
-  cout << "Camera::fov " << camera->getFov() << endl;
+  //cout << "Camera::fov " << camera->getFov() << endl;
   cout << "Scene::size " << scene->getNumbersGeometries() << endl;
   
   scene->render(camera, screen);

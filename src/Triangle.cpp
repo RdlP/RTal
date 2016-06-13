@@ -11,15 +11,7 @@ Triangle::~Triangle()
 	
 }
 
-vec3 Triangle::getNormal(vec3 point)
-{
-	vec3 e1 = m_b-m_a;
-	vec3 e2 = m_c-m_a;
-	vec3 n = glm::normalize(glm::cross(e1,e2));
-	return n;
-}
-
-int Triangle::hit(Ray ray, vec3 &point)
+Intersection Triangle::hit(Ray ray)
 {
 
 	ray.setOrigin(vec3(getInverseTransform() * vec4(ray.getOrigin(),1)));
@@ -37,13 +29,13 @@ int Triangle::hit(Ray ray, vec3 &point)
 	float nd = glm::dot(normal,ray.getDirection());
 	if (nd == 0) // PARAREL
 	{
-		return 0;
+		return Intersection(false);
 	}
 	float d = glm::dot(normal, m_a);
 	float t = (d-glm::dot(normal,ray.getOrigin())) / nd;
 	if (t < 0)
 	{
-		return 0;
+		return Intersection(false);
 	}
 	vec3 pointq = ray.getOrigin() + t * ray.getDirection();
 	vec3 ap = pointq - m_a; 
@@ -58,7 +50,7 @@ int Triangle::hit(Ray ray, vec3 &point)
 
 	if (e1 < 0 || e2 < 0 || e3 < 0)
 	{
-		return 0;
+		return Intersection(false);
 	}
 	float dom = glm::dot(glm::cross(ab, ac),normal);
 	float alpha = e2 /dom;
@@ -66,7 +58,7 @@ int Triangle::hit(Ray ray, vec3 &point)
 	float gamma = e1/dom;
 
 
-	point = m_a*alpha + m_b*beta + m_c*gamma;
+	vec3 point = m_a*alpha + m_b*beta + m_c*gamma;
 
-	return 1;
+	return Intersection(true, point, normal);
 }

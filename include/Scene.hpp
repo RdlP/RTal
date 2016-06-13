@@ -6,7 +6,9 @@
 #include "Light.hpp"
 #include "DirectionalLight.hpp"
 #include "PointLight.hpp"
+#include "SpotLight.hpp"
 #include "Camera.hpp"
+#include "Intersection.hpp"
 #include "Screen.hpp"
 #include "Ray.hpp"
 #include <iostream>
@@ -19,7 +21,7 @@ class Scene
 		Scene();
 		virtual ~Scene();
 		void render(Camera* camera, Screen* screen);
-		vec3 trace(Ray ray, int depth);
+		vec3 trace(Ray ray, int depth, float oiRefract);
 		void addGeometry(Geometry* geometry);
 		int getNumbersGeometries();
 		void addLight( Light* light);

@@ -2,10 +2,17 @@
 
 #include "Scene.hpp"
 #include "Screen.hpp"
+#include "PerspectiveCamera.hpp"
+#include "OrthographicCamera.hpp"
 #include "Camera.hpp"
+
 #include "Geometry.hpp"
 #include "Sphere.hpp"
+#include "Cone.hpp"
 #include "Triangle.hpp"
+#include "Torus.hpp"
+#include "Box.hpp"
+#include "Cylinder.hpp"
 #include "Material.hpp"
 #include "Light.hpp"
 #include "PointLight.hpp"

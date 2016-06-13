@@ -77,7 +77,7 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
         }else if (cmd == "camera") {
           validinput = readvals(s,10,values); // 10 values eye cen up fov
           if (validinput) {
-            camera = new Camera(vec3(values[0],values[1],values[2]), vec3(values[3],values[4],values[5]), vec3(values[6],values[7],values[8]), values[9]);
+            camera = new PerspectiveCamera(vec3(values[0],values[1],values[2]), vec3(values[3],values[4],values[5]), vec3(values[6],values[7],values[8]), values[9]);
 
           }
         }else if (cmd == "point" || cmd == "directional"){
@@ -91,6 +91,15 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
               DirectionalLight * directional = new DirectionalLight(vec3(values[0],values[1],values[2]),vec3(values[3],values[4],values[5]));
               scene->addLight(directional);
             }
+          }
+        }else if(cmd == "spot"){
+          validinput = readvals(s,9,values);
+          if (validinput) {
+            SpotLight * spot = new SpotLight(vec3(values[0],values[1],values[2]),vec3(values[3],values[4],values[5]), vec3(values[6],values[7],values[8]));
+            spot->setAttenuation(attenuation[0], attenuation[1], attenuation[2]);
+            spot->setExponent(1);
+            spot->setCosCutOff(0.70);
+            scene->addLight(spot);
           }
         }else if (cmd == "ambient") {
           validinput = readvals(s, 3, values); // colors 
@@ -168,8 +177,13 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
             rightmultiply(rotate4, transfstack);
 
           }
+        }else if (cmd == "refract")
+        {
+          validinput = readvals(s,1,values); 
+          if (validinput) {
+            refractIndex = values[0];
+          }
         }
-
         else if (cmd == "pushTransform") {
           transfstack.push(transfstack.top()); 
         } else if (cmd == "popTransform") {
@@ -188,6 +202,7 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
           if (validinput) {
             Sphere *sphere = new Sphere(vec3(values[0],values[1],values[2]),values[3], transfstack.top());
             Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]), vec3(emission[0], emission[1], emission[2]), shininess);
+            material->setRefractionIndex(refractIndex);
             sphere->setMaterial(material);
             scene->addGeometry(sphere);
           }
@@ -203,7 +218,45 @@ void readfile(const char* filename, Camera *&camera, Screen* &screen, Scene *&sc
             Triangle *triangle = new Triangle(vertices[(int)values[0]],vertices[(int)values[1]],vertices[(int)values[2]], transfstack.top());
             Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]),  vec3(emission[0], emission[1], emission[2]), shininess);
             triangle->setMaterial(material);
+            material->setRefractionIndex(refractIndex);
             scene->addGeometry(triangle);
+          }
+        }else if (cmd=="box"){
+          validinput = readvals(s,6,values); 
+          if (validinput) {
+            float half[3]={values[0],values[1], values[2]};
+            Box *box = new Box(half, vec3(values[3],values[4],values[5]), transfstack.top());
+            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]),  vec3(emission[0], emission[1], emission[2]), shininess);
+            box->setMaterial(material);
+            material->setRefractionIndex(refractIndex);
+            scene->addGeometry(box);
+          }
+        }else if (cmd=="cylinder"){
+          validinput = readvals(s,2,values); 
+          if (validinput) {
+            Cylinder *cylinder = new Cylinder(values[0], values[1], transfstack.top());
+            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]),  vec3(emission[0], emission[1], emission[2]), shininess);
+            cylinder->setMaterial(material);
+            material->setRefractionIndex(refractIndex);
+            scene->addGeometry(cylinder);
+          }
+        }else if (cmd=="cone"){
+          validinput = readvals(s,2,values); 
+          if (validinput) {
+            Cone *cone = new Cone(values[0], values[1], transfstack.top());
+            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]),  vec3(emission[0], emission[1], emission[2]), shininess);
+            cone->setMaterial(material);
+            material->setRefractionIndex(refractIndex);
+            scene->addGeometry(cone);
+          }
+        }else if (cmd=="torus"){
+          validinput = readvals(s,2,values); 
+          if (validinput) {
+            Torus *torus = new Torus(values[0], values[1], transfstack.top());
+            Material *material = new Material(vec3(ambient[0], ambient[1], ambient[2]), vec3(diffuse[0], diffuse[1], diffuse[2]), vec3(specular[0], specular[1], specular[2]),  vec3(emission[0], emission[1], emission[2]), shininess);
+            torus->setMaterial(material);
+            material->setRefractionIndex(refractIndex);
+            scene->addGeometry(torus);
           }
         }
         else {

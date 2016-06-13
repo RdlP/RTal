@@ -1,32 +1,28 @@
-#include "Camera.hpp"
+#include "PerspectiveCamera.hpp"
 
-Camera::Camera(vec3 eye, vec3 lookAt, vec3 up):
-	m_eye(eye), m_lookAt(lookAt), m_up(up)
+PerspectiveCamera::PerspectiveCamera(vec3 eye, vec3 lookAt, vec3 up, float fov):
+	Camera(eye, lookAt, up), m_fov(fov)
 {
-	//precomputeCameraFrame();
+	precomputeCameraFrame();
 }
 
-Camera::~Camera(){
+PerspectiveCamera::~PerspectiveCamera(){
 
 }
 
-vec3 Camera::getEye(){
-	return m_eye;
+float PerspectiveCamera::getFov(){
+	return m_fov;
 }
 
-vec3 Camera::getLookAt(){
-	return m_lookAt;
+void PerspectiveCamera::precomputeCameraFrame()
+{
+	m_w = glm::normalize(m_eye - m_lookAt);
+	m_u = glm::normalize(glm::cross(m_up, m_w));
+	m_v = glm::cross(m_w, m_u);
+	m_angle = tan(M_PI * 0.5 * m_fov / 180.); 
 }
 
-vec3 Camera::getUp(){
-	return m_up;
-}
-
-vec3 Camera::getEyeV(){
-	return m_lookAt - m_eye;
-}
-
-/*Ray Camera::computeRay(int x, int y, Screen* screen)
+Ray PerspectiveCamera::computeRay(int x, int y, Screen* screen)
 {
 	float alpha = m_angle * (((x+0.5) -((float)screen->getWidth()/2)) / ((float)screen->getWidth()/2)) * screen->getAspectRatio();
 	float beta = m_angle * ((((float)screen->getHeight()/2) - (y+0.5)) / ((float)screen->getHeight()/2)) ;
@@ -39,4 +35,4 @@ vec3 Camera::getEyeV(){
 	Ray primaryRay(m_eye, glm::normalize(ray_direction));
 	//Ray primaryRay(origin, glm::normalize(ray_direction));
 	return primaryRay;
-}*/
+}
